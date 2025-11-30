@@ -1,128 +1,66 @@
-# JobMate AI — Intelligent Career & Recruitment Assistant
+# JobMate AI Backend
+This project contains the backend application for JobMate AI, built with Python.
 
-A professional, AI-powered platform designed to streamline job search and recruitment processes for individuals and organizations.
+## Getting Started
+Follow these instructions to set up and run the project on your local machine.
+## Prerequisites
+Make sure you have Python (version 3.8 or higher recommended) and pip (Python Package Installer) installed.
+You can verify your installation by running:
+''' bash 
+python --version
+pip --version
+'''
+### Installation
 
----
+1. **Clone the repository:**
+''' bash
+git clone <https://github.com/iwstech3/JobmateAI-Backend.git>
+cd "JobMateAI-Backend"
 
-## 🚀 Overview
+2. **Create a virtual environment (recommended):**
 
-JobMate AI is a next‑generation career and recruitment solution built to enhance efficiency, accuracy, and accessibility in the job ecosystem. The platform empowers job seekers with AI‑generated application documents, organized job tracking, opportunity discovery, and structured interview preparation. For HR teams, it provides automated screening, candidate scoring, and a unified recruitment dashboard.
+''' bash   
+python -m venv Jobmate_env
+'''
 
-Designed with a deep understanding of the African job market, JobMate AI bridges gaps between talent and opportunity through intelligent automation.
+### Activate the virtual environment:
 
----
+On Windows:
+'''bash
+Jobmate_env\Scripts\activate
+'''
 
-## ✨ Key Features
+### Configuration
+1. Create a .env file in the Backend directory and add your environment variables:
+env# Example environment variables
+DATABASE_URL=your_database_url
+SECRET_KEY=your_secret_key
+API_KEY=your_api_key
+2. add the following to your requirements.txt file:
+ 
+### Install dependencies:
 
-### **For Job Seekers**
+'''bash   
+pip install -r requirements.txt
+'''
 
-* **AI‑Generated Resumes & Cover Letters** tailored to job descriptions
-* **Job Application Tracker** with structured status categories
-* **AI‑Driven Job Recommendations** based on skills and experience
-* **Interview Preparation Assistant** with scoring and actionable feedback
-* **Opportunity Aggregation** for internships, fellowships, and conferences
-
-### **For HR Teams**
-
-* **Automated Candidate Screening & Ranking**
-* **Role Fit Scoring** based on CVs, experience, and competencies
-* **Centralized HR Dashboard** for job posts and applicant management
-* **External Talent Search Engine** for identifying candidates beyond direct applicants
-
----
-
-## 🧠 Technology Stack
-
-### **Backend**
-
-* FastAPI 
-* PostgreSQL
-* GPT‑4o, Gemini, Llama 3 for language intelligence
-* Whisper for voice processing
-
-### **Frontend**
-
-* Next.js
-* Tailwind CSS & ShadCN UI
-* Zustand / Redux for state management
-
-### **DevOps & Infrastructure**
-
-* Vercel (Frontend Hosting)
-* Render / AWS (Backend)
-* Supabase (Database & Authentication)
-
----
-
-## 🗂️ Project Structure
-
-```bash
-jobmate-ai/
-│
-├── backend/
-│   ├── api/
-│   ├── models/
-│   ├── services/
-│   └── utils/
-│
-├── frontend/
-│   ├── components/
-│   ├── pages/
-│   ├── hooks/
-│   └── styles/
-│
-└── docs/
+### Running the Development Server
+To start the development server:
+'''bash
+python app.py
+'''
+Or if using FastAPI:
+'''bash
+uvicorn main:app --reload
 ```
 
----
+The backend will typically run on `http://localhost:8000`.
 
-## 🎯 Roadmap
+### Available Commands
 
-* [x] Backend foundation
-* [x] Database schema setup
-* [ ] AI Resume & Cover Letter Engine
-* [ ] Job Search & Tracking API
-* [ ] Interview Assistant Module
-* [ ] HR Dashboard & Screening Tools
-* [ ] Frontend Implementation
-* [ ] Public Beta Release
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome. Please fork the repository, create a feature branch, and submit a pull request.
-
----
-
-## 🪪 License
-
-MIT License.
-
----
-
-## 🌟 Team Members
-
-1. Bongmoyong Gad — Team Leader for this project, Backend Developer, Software/AI Engineer
-2. Delsy Kinyuy — Project Manager for this project, Frontend Engineer, Data Scientist/AI Engineer
-3. Njei Pierrick — Frontend Developer for this project, Software/AI Engineer
-4. Roberta Musi — Backend Developer for this project, Data Scientist/AI Engineer
-5. Sahal Larissa — UI/UX Designer for this project, AI Engineer
-6. Fokou Channelle - Project supervisor, Backend engineer and project manager
+- `python app.py` - Starts the development server
+- `pip install -r requirements.txt` - Installs all dependencies
+- `pip freeze > requirements.txt` - Updates the requirements file
 
 
----
-
-## 💬 Contact
-
-For questions, feedback, or collaboration opportunities:
-
-* Email: *jobmateai6@gmail.com*
-* GitHub Issues: Open for feature requests and bug reports
-
----
-
-## ⭐ Support
-
-If you find this project valuable, please consider starring the repository.
-
+Note: Make sure to update the command for running the server based on your actual framework (Flask, FastAPI, Django, etc.) and adjust the port numbers accordingly.
