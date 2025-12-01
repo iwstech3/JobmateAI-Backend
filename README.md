@@ -6,7 +6,7 @@ Follow these instructions to set up and run the project on your local machine.
 ## Prerequisites
 Make sure you have Python (version 3.8 or higher recommended) and pip (Python Package Installer) installed.
 You can verify your installation by running:
-''' bash 
+'''bash 
 python --version
 pip --version
 '''
@@ -16,10 +16,11 @@ pip --version
 ''' bash
 git clone <https://github.com/iwstech3/JobmateAI-Backend.git>
 cd "JobMateAI-Backend"
+'''
 
-2. **Create a virtual environment (recommended):**
+3. **Create a virtual environment (recommended):**
 
-''' bash   
+'''bash   
 python -m venv Jobmate_env
 '''
 
@@ -64,3 +65,4 @@ The backend will typically run on `http://localhost:8000`.
 
 
 Note: Make sure to update the command for running the server based on your actual framework (Flask, FastAPI, Django, etc.) and adjust the port numbers accordingly.
+
