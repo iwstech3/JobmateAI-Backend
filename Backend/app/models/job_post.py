@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, func
+from sqlalchemy.orm import relationship
 from app.database.db import Base
 
 class JobPost(Base):
@@ -16,3 +17,6 @@ class JobPost(Base):
         server_default=func.now(),
         onupdate=func.now()  # Auto-update on modification
     )
+    
+    # Relationships
+    analysis = relationship("JobAnalysis", back_populates="job_post", uselist=False)

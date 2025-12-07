@@ -4,6 +4,7 @@ from .job_embedding import JobEmbedding
 from .document_embedding import DocumentEmbedding
 from .parsed_cv import ParsedCV
 from .cv_analysis import CVAnalysis
+from .job_analysis import JobAnalysis
 
 __all__ = [
     "JobPost",
@@ -11,5 +12,6 @@ __all__ = [
     "JobEmbedding",
     "DocumentEmbedding",
     "ParsedCV",
-    "CVAnalysis"
+    "CVAnalysis",
+    "JobAnalysis"
 ]

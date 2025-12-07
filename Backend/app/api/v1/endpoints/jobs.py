@@ -192,3 +192,135 @@ def delete_job(
         )
     
     return None  # 204 No Content
+
+
+@router.post(
+    "/{job_id}/analyze",
+    response_model=None,  # Will use JobAnalysisOut
+    status_code=status.HTTP_200_OK,
+    summary="Analyze job description and extract requirements"
+)
+async def analyze_job(
+    job_id: int,
+    db: Annotated[Session, Depends(get_db)]
+):
+    """
+    Analyze a job posting and extract structured requirements and metadata.
+    
+    - **job_id**: Job post ID
+    
+    Returns comprehensive job analysis including:
+    - Required and preferred skills
+    - Experience level and years
+    - Education requirements and certifications
+    - Responsibilities and benefits
+    - Salary range (if mentioned)
+    - Employment type and remote policy
+    - Key technologies and soft skills
+    
+    Also generates and stores semantic embedding for job-CV matching.
+    """
+    from app.services.ai.job_analyzer_service import get_job_analyzer_service
+    from app.services.ai.embeddings_service import get_embeddings_service
+    from app.crud.job_analysis import create_job_analysis, get_job_analysis_by_job_id
+    from app.schemas.job_analysis import JobAnalysisCreate, JobAnalysisOut, SalaryRange
+    from app.models.job_embedding import JobEmbedding
+    
+    # 1. Check if job exists
+    job = crud.get_job_post(db, job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job post with id {job_id} not found"
+        )
+    
+    # 2. Check if already analyzed (return cached result)
+    existing_analysis = get_job_analysis_by_job_id(db, job_id)
+    if existing_analysis:
+        return JobAnalysisOut.from_orm(existing_analysis)
+    
+    # 3. Analyze job
+    analyzer_service = get_job_analyzer_service()
+    try:
+        analysis_result = analyzer_service.analyze_job(job)
+        
+        # 4. Convert to Pydantic models for validation
+        salary_range = None
+        if analysis_result.get("salary_range"):
+            salary_range = SalaryRange(**analysis_result["salary_range"])
+        
+        # 5. Create analysis record
+        analysis_create = JobAnalysisCreate(
+            job_post_id=job_id,
+            required_skills=analysis_result["required_skills"],
+            preferred_skills=analysis_result["preferred_skills"],
+            experience_level=analysis_result["experience_level"],
+            min_years_experience=analysis_result.get("min_years_experience"),
+            max_years_experience=analysis_result.get("max_years_experience"),
+            education_requirements=analysis_result["education_requirements"],
+            certifications=analysis_result["certifications"],
+            responsibilities=analysis_result["responsibilities"],
+            benefits=analysis_result["benefits"],
+            salary_range=salary_range,
+            employment_type=analysis_result["employment_type"],
+            remote_policy=analysis_result.get("remote_policy"),
+            industry=analysis_result.get("industry"),
+            company_size=analysis_result.get("company_size"),
+            key_technologies=analysis_result["key_technologies"],
+            soft_skills=analysis_result["soft_skills"]
+        )
+        
+        db_analysis = create_job_analysis(db, analysis_create)
+        
+        # 6. Generate and store embedding
+        try:
+            embeddings_service = get_embeddings_service()
+            
+            # Create embedding text from key job information
+            embedding_text = f"{job.title}\n"
+            embedding_text += f"Company: {job.company}\n"
+            embedding_text += f"Required skills: {', '.join(analysis_result['required_skills'][:10])}\n"
+            embedding_text += f"Responsibilities: {' '.join(analysis_result['responsibilities'][:3])}\n"
+            embedding_text += f"Experience level: {analysis_result['experience_level']}"
+            
+            # Generate embedding vector
+            embedding_vector = embeddings_service.embed_document(embedding_text)
+            
+            # Check if embedding already exists
+            existing_embedding = db.query(JobEmbedding).filter(
+                JobEmbedding.job_post_id == job_id
+            ).first()
+            
+            if existing_embedding:
+                # Update existing embedding
+                existing_embedding.embedding = embedding_vector
+                existing_embedding.embedded_text = embedding_text
+            else:
+                # Create new embedding
+                job_embedding = JobEmbedding(
+                    job_post_id=job_id,
+                    embedding=embedding_vector,
+                    embedded_text=embedding_text
+                )
+                db.add(job_embedding)
+            
+            db.commit()
+            
+        except Exception as e:
+            # Log embedding error but don't fail the analysis
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to generate embedding for job {job_id}: {str(e)}")
+        
+        return JobAnalysisOut.from_orm(db_analysis)
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Analysis failed: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred during analysis: {str(e)}"
+        )
