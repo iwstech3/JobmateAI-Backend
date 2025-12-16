@@ -441,7 +441,9 @@ async def analyze_job(
     # 3. Analyze job
     analyzer_service = get_job_analyzer_service()
     try:
-        analysis_result = analyzer_service.analyze_job(job)
+        result = analyzer_service.analyze_job(job)
+        analysis_result = result["analysis"]
+        embedding_text = result["embedding_text"]
         
         # 4. Convert to Pydantic models for validation
         salary_range = None
@@ -475,12 +477,9 @@ async def analyze_job(
         try:
             embeddings_service = get_embeddings_service()
             
-            # Create embedding text from key job information
-            embedding_text = f"{job.title}\n"
-            embedding_text += f"Company: {job.company}\n"
-            embedding_text += f"Required skills: {', '.join(analysis_result['required_skills'][:10])}\n"
-            embedding_text += f"Responsibilities: {' '.join(analysis_result['responsibilities'][:3])}\n"
-            embedding_text += f"Experience level: {analysis_result['experience_level']}"
+            # Use pre-calculated embedding text from analyzer service
+            # embedding_text is already extracted above
+            pass
             
             # Generate embedding vector
             embedding_vector = embeddings_service.embed_document(embedding_text)
@@ -511,7 +510,11 @@ async def analyze_job(
             logger = logging.getLogger(__name__)
             logger.error(f"Failed to generate embedding for job {job_id}: {str(e)}")
         
-        return JobAnalysisOut.from_orm(db_analysis)
+        return {
+            "job_analysis": JobAnalysisOut.from_orm(db_analysis),
+            "embedding_created": True,
+            "embedding_dimensions": len(embedding_vector)
+        }
         
     except ValueError as e:
         raise HTTPException(

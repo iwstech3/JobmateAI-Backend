@@ -45,13 +45,26 @@ class JobAnalyzerService:
             # 3. Enhance with rule-based extraction (fallback/supplement)
             analysis = self._enhance_with_rules(job_post, analysis)
             
+            # 4. Prepare embedding text (NEW)
+            embedding_text = self._prepare_embedding_text(job_post, analysis)
+            
             logger.info(f"Job analysis completed. Experience level: {analysis.get('experience_level')}")
-            return analysis
+            
+            # Return both analysis and embedding_text
+            return {
+                "analysis": analysis,
+                "embedding_text": embedding_text
+            }
             
         except Exception as e:
             logger.error(f"Error during job analysis: {str(e)}", exc_info=True)
-            # Fallback to rule-based analysis only
-            return self._fallback_analysis(job_post)
+            # Fallback to rule-based analysis
+            fallback_analysis = self._fallback_analysis(job_post)
+            embedding_text = self._prepare_embedding_text(job_post, fallback_analysis)
+            return {
+                "analysis": fallback_analysis,
+                "embedding_text": embedding_text
+            }
     
     def _analyze_with_llm(self, job_post: JobPost) -> Dict[str, Any]:
         """
@@ -329,6 +342,35 @@ Return:
             "soft_skills": []
         }
     
+    def _prepare_embedding_text(self, job_post: JobPost, analysis: Dict[str, Any]) -> str:
+        """
+        Prepare text for embedding generation.
+        Combines title, key requirements, and responsibilities.
+        """
+        text_parts = [
+            f"Job Title: {job_post.title}",
+            f"Company: {job_post.company}",
+            f"Experience Level: {analysis.get('experience_level', 'Not specified')}",
+        ]
+        
+        # Add required skills
+        required_skills = analysis.get('required_skills', [])
+        if required_skills:
+            text_parts.append(f"Required Skills: {', '.join(required_skills[:10])}")
+        
+        # Add key technologies
+        key_technologies = analysis.get('key_technologies', [])
+        if key_technologies:
+            text_parts.append(f"Technologies: {', '.join(key_technologies[:8])}")
+        
+        # Add top responsibilities
+        responsibilities = analysis.get('responsibilities', [])
+        if responsibilities:
+            top_responsibilities = ' '.join(responsibilities[:3])
+            text_parts.append(f"Key Responsibilities: {top_responsibilities}")
+        
+        return '\n'.join(text_parts)
+
     def _fallback_analysis(self, job_post: JobPost) -> Dict[str, Any]:
         """Complete fallback analysis using only rule-based methods"""
         logger.warning("Using fallback analysis (LLM unavailable)")
