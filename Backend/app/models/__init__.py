@@ -12,6 +12,7 @@ from app.models.document_embedding import DocumentEmbedding
 from app.models.parsed_cv import ParsedCV
 from app.models.cv_analysis import CVAnalysis
 from app.models.job_analysis import JobAnalysis
+from app.models.generated_content import CoverLetter
 
 __all__ = [
     "JobPost",
@@ -24,5 +25,6 @@ __all__ = [
     "DocumentEmbedding",
     "ParsedCV",
     "CVAnalysis",
-    "JobAnalysis"
+    "JobAnalysis",
+    "CoverLetter"
 ]

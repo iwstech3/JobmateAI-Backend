@@ -8,3 +8,10 @@ pydantic
 pydantic-settings
 python-dotenv
 email-validator
+langchain-google-genai
+pdfplumber
+python-docx
+PyPDF2
+pgvector
+gunicorn
+httpx
