@@ -9,6 +9,7 @@ pydantic-settings
 python-dotenv
 email-validator
 langchain-google-genai
+google-generativeai
 pdfplumber
 python-docx
 PyPDF2
