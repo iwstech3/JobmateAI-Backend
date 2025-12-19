@@ -8,6 +8,7 @@ import logging
 import os
 
 from contextlib import asynccontextmanager
+from app import models  # Ensure all models are registered with Base
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -17,13 +18,24 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Startup logic
     try:
-        logger.info("Verifying database connection and creating tables...")
+        logger.info("--- Database Initialization Start ---")
+        logger.info(f"Using database: {engine.url.render_as_string(hide_password=True)}")
+        
         # Dispose of any engine connection created during import/fork phase
         engine.dispose()
+        
+        # Verify connection before creating tables
+        with engine.connect() as conn:
+            logger.info("Database connection verified.")
+            
+        logger.info("Creating tables if they don't exist...")
         Base.metadata.create_all(bind=engine)
         logger.info("Database initialized successfully.")
+        logger.info("--- Database Initialization Complete ---")
     except Exception as e:
-        logger.error(f"Error during database initialization: {e}")
+        logger.error(f"FATAL: Database initialization failed: {e}", exc_info=True)
+        # In production, we might want to let it continue so we can access /health 
+        # or logs, but we ensure it's logged as FATAL.
     
     yield
     # Shutdown logic (if any)
