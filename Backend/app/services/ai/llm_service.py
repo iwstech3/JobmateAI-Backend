@@ -32,7 +32,7 @@ class LLMService:
             temperature: Creativity level (0-1, lower = more focused)
             max_tokens: Maximum response length
         """
-        self.model_name = model_name or os.getenv("LLM_MODEL", "gemini-2.5-flash")
+        self.model_name = model_name or os.getenv("LLM_MODEL", "gemini-1.5-flash")
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.api_key = os.getenv("GEMINI_API_KEY")
@@ -154,7 +154,7 @@ class LLMService:
     def estimate_cost(self, input_text: str, output_text: str) -> float:
         """
         Estimate API cost for a request.
-        Gemini 2.5 Flash: $0.00025 per 1K tokens (very approximate)
+        Gemini 1.5 Flash: $0.0003 per 1K tokens (approximate)
         
         Args:
             input_text: Input prompt
@@ -167,7 +167,7 @@ class LLMService:
         output_tokens = self.count_tokens(output_text)
         total_tokens = input_tokens + output_tokens
         
-        # Gemini 2.5 Flash approximate pricing
+        # Gemini 1.5 Flash approximate pricing
         cost_per_1k = 0.00025
         return (total_tokens / 1000) * cost_per_1k
 
