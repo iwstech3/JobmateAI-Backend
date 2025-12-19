@@ -7,25 +7,34 @@ from app.models import job_post, document  # ← Add document
 import logging
 import os
 
+from contextlib import asynccontextmanager
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-try:
-    logger.info("Connecting to database and creating tables if needed...")
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables verified.")
-except Exception as e:
-    logger.error(f"Error during startup database sync: {e}")
-    # We don't exit here to allow the app to start and respond to health checks
-    # so we can see the errors in the logs or /health endpoint.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic
+    try:
+        logger.info("Verifying database connection and creating tables...")
+        # Dispose of any engine connection created during import/fork phase
+        engine.dispose()
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database initialized successfully.")
+    except Exception as e:
+        logger.error(f"Error during database initialization: {e}")
+    
+    yield
+    # Shutdown logic (if any)
 
 app = FastAPI(
     title="JobMate AI API",
     description="AI-driven recruitment assistant platform",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # CORS middleware
